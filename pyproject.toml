@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "streamlit-inspect"
+version = "0.1.0"
+description = "Create interactive documentation using streamlit"
+authors = ["Ceyda Cinarel <15624271+cceyda@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/cceyda/streamlit-inspect"
+keywords = ["streamlit, streamlit-component"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+typing-inspect = "^0.6.0"
+streamlit = "^0.80.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^4.6"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.dephell.main]
+from = {format = "poetry", path = "pyproject.toml"}
+to = {format = "setuppy", path = "setup.py"}
