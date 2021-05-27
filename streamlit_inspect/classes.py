@@ -5,25 +5,30 @@ class StParam():
     def __init__(self,*args,**kwargs):
         pass
         
-    def init_param(self,param_name,param_type,default=None,input_range=None):
+    def init_param(self,container,param_name,param_type,param_index,default=None,input_range=None): 
+        self.container=container
         self.param_name=param_name
         self.param_type=param_type
+        self.param_index=param_index
         self.default=default
         self.input_range=input_range 
         # Iwant to support ranges not sure how, parse docstring?
         
     def render(self,meta=None):
+        # st.write(self.param_index)
         self.label=f"{self.param_name} ( {self.param_type} {', optional ' if self.default else ''}){f' Default:{self.default}' if self.default else ''}"
+        if meta:
+            # with self.container:
+            st.write(meta)
         
 class StString(StParam):
 
     def render(self,meta=None):
         super().render(meta)
-        if meta:
-            st.write(meta)
-        cols=st.beta_columns([7,1])
-        val = cols[0].text_input(self.label, value=self.default if self.default else "")
-        none = cols[1].checkbox('None',key=self.param_name)
+        # cols=st.beta_columns([7,1])
+        with self.container:
+            val = st.text_input(self.label, value=self.default if self.default else "")
+            none = st.checkbox('None',key=self.param_name)
         if none:
             val=None
         return val
@@ -31,11 +36,10 @@ class StString(StParam):
 class StInt(StParam):
     def render(self,meta=None):
         super().render(meta)
-        if meta:
-            st.write(meta)
-        cols=st.beta_columns([7,1])
-        val = cols[0].number_input(self.label, value=0 if not self.default else self.default)
-        none = cols[1].checkbox('None',key=self.param_name)
+        # cols=st.beta_columns([7,1])
+        with self.container:
+            val = st.number_input(self.label, value=0 if not self.default else self.default)
+            none = st.checkbox('None',key=self.param_name)
         if none:
             val=None
         return val
@@ -43,11 +47,10 @@ class StInt(StParam):
 class StFloat(StParam):
     def render(self,meta=None):
         super().render(meta)
-        if meta:
-            st.write(meta)
-        cols=st.beta_columns([7,1])
-        val = cols[0].number_input(self.label, value=0. if not self.default else self.default, step=0.1)
-        none = cols[1].checkbox('None',key=self.param_name)
+        # cols=st.beta_columns([7,1])
+        with self.container:
+            val = st.number_input(self.label, value=0. if not self.default else self.default, step=0.1)
+            none = st.checkbox('None',key=self.param_name)
         if none:
             val=None
         return val
@@ -56,18 +59,15 @@ class StBool(StParam):
 
     def render(self,meta=None):
         super().render(meta)
-        if meta:
-            st.write(meta)
-        cols=st.beta_columns([7,1])
-        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-        val = cols[0].radio(self.label, [None,True,False], index=0 if self.default is None else self.default)
+        # cols=st.beta_columns([7,1])
+        with self.container:
+            st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+            val = st.radio(self.label, [None,True,False], index=0 if self.default is None else self.default)
         return val
     
 class StEmpty(StParam):
     def render(self,meta=None):
         super().render(meta)
-        if meta:
-            st.write(meta)
 #         cols=st.beta_columns([7,1])
         if self.param_name == "self":
             st.write("This is a class method (self,)")
@@ -78,10 +78,6 @@ class StEmpty(StParam):
             st.write("No support for passing kwargs yet")
             st.stop()
         return None  
-    
-    
-
-    
     
     
 ######

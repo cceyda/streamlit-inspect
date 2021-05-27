@@ -103,43 +103,45 @@ class StFunctionView():
     def param2st(self,param):
         param_name=param.name
         # typing doesn't have __name__ (Is basic type)
+        container=st.beta_container()
         if type(param.annotation).__name__ == 'type':
             param_type=param.annotation.__name__
             if has_default(param.default):
                 default=param.default
             else:
                 default=None
-            return self.basic2st(param_name,param_type,default)
+            return self.basic2st(container,param_name,param_type,0,default)
         else:
             param_type=type(param.annotation).__name__
             #Is union or tuple
-            return self.typing2st(param_name,param_type,param)
+            return self.typing2st(container,param_name,param_type,param)
         
         
-    def typing2st(self,param_name,param_type,param):
+    def typing2st(self,container,param_name,param_type,param):
         args=tp.get_last_args(param.annotation)
 #         if has_default(param.default):
 #             default=param.default
 #         else:
 #             default=[None]*len(args)
-        return self._typing2st(param_name,param.annotation,args,param.default)
+        return self._typing2st(container,param_name,param.annotation,args,param.default)
 
-    def _typing2st(self,param_name,p_annotation,args,default,meta=None):
+    def _typing2st(self,container,param_name,p_annotation,args,default,meta=None):
         if tp.is_tuple_type(p_annotation):
             if not has_default(default):
                 default=[None]*len(args)
             tuple_values=[]
-            with st.beta_container():
+            with container:
+                cols=st.beta_columns([1]*len(args))
                 for i,(type_,param_default) in enumerate(zip(args,default)):
                     if i!=0:
                         meta="AND"
                     p_name = f'{param_name} [{i}]'
                     param_type=type_.__name__
-                    ret=self.basic2st(p_name,param_type,param_default,meta)
+                    ret=self.basic2st(cols[i],p_name,param_type,i,param_default,meta)
                     tuple_values.append(ret)
                 return tuple(tuple_values)
         elif tp.is_union_type(p_annotation):
-            with st.beta_container():
+            with container:
                 return_value=None
 #                 st.write(param_name)
 #                 st.write(default)
@@ -147,6 +149,7 @@ class StFunctionView():
                     default=None
 
                 for i,type_ in enumerate(args):
+                    cols=st.beta_columns([1]*len(args))
                     if i!=0:
                         meta="OR"
                     p_name = f'{param_name} [{i}]'
@@ -158,14 +161,16 @@ class StFunctionView():
                         
                     else:    
                         param_type=type_.__name__
-                        ret=self.basic2st(p_name,param_type,default,meta)
+                        ret=self.basic2st(cols[i],p_name,param_type,i,default,meta)
                     if ret is not None and return_value is None:
                         return_value=ret
                 return return_value
 
-    def basic2st(self,param_name,param_type,default,meta=None):
-
-        if param_type == "_empty":
+    def basic2st(self,container,param_name,param_type,param_index,default,meta=None):
+        
+        if param_type in self.custom_types.keys():
+            type_class=self.custom_types[param_type]
+        elif param_type == "_empty":
             type_class = StEmpty()
         elif param_type == "str":
             type_class = StString()
@@ -175,12 +180,10 @@ class StFunctionView():
             type_class = StFloat()
         elif param_type == 'int':
             type_class = StInt()
-        elif param_type in self.custom_types.keys():
-            type_class=self.custom_types[param_type]
         else:
             st.write(f"UNK input type: {param_type} for {param_name}")
             return None
-        type_class.init_param(param_name,param_type,default=default)  
+        type_class.init_param(container,param_name,param_type,param_index,default=default)  
         return type_class.render(meta=meta)
         
 def render_signature(fn):

@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_inspect import functions as stf
 import typing
 
-from tests import test_class as t
+import tests.test_class as t
 
 modules_list = stf.get_modules(t)
 
@@ -30,8 +30,10 @@ if selected_function:
     selected_function = getattr(class_, selected_function)
 
     st.write(f"# {selected_function.__module__}.{selected_function.__qualname__}")
-    simple_signature = stf.render_signature(selected_function)
-    st.markdown(f"Signature: ```{simple_signature}```")
+    # simple_signature = stf.render_signature(selected_function)
+    # st.markdown(f"Signature: ```{simple_signature}```")
+    st.help(selected_function)
+    
 
     required_container = st.beta_container()
     optional_params = st.beta_expander("Optional", expanded=True)
@@ -42,10 +44,11 @@ if selected_function:
         selected_function, None, optional_container, required_container
     )
     ret = functionView.get_function_params()
-    st.write(ret.args)
-    st.write(ret.kwargs)
-    functionView.call_func(ret)
-    st.write(ret)
+    st.write("Inputs:",ret)
+    st.write("args:",ret.args)
+    st.write("kwargs:",ret.kwargs)
+    result=functionView.call_func(ret)
+    st.write("result:",result)
 
 
 # inspect.getdoc(fn)
