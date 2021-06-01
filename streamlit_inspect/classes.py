@@ -26,7 +26,7 @@ class StParam():
         with self.container[2*self.param_index+1]:
             self._render(meta)
         # Move None here?
-        self.assign()
+        return self.assign()
 
     def _render(self,meta=None):
         #Custom types may want to do their own thing with meta_data and None
@@ -71,4 +71,3 @@ class StEmpty(StParam):
         elif self.param_name == "kwargs":
             st.write("No support for passing kwargs yet")
             st.stop()
-        return None  

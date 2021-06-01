@@ -17,19 +17,15 @@ class StTensorKornia(StParam):
     def __init__(self,image):
         super().__init__()
         self.image=image
-        
-    def render(self,meta=None):
-        super().render()
-#         cols=st.beta_columns([7,1])
+    def _render(self,meta=None):
         if meta=="OR":  
-           return None 
+           self.val=None
         else: # Assuming if torch.Tensor and is not Union type it is an image
             if meta:
                 st.write(meta)
             input_=F.pil_to_tensor(self.image).float()/255
             input_=torch.stack(1*[input_])
-            return input_
-        return None    
+            self.val=input_
 
 uploaded_file = st.sidebar.file_uploader("Upload Image/s", type=['png','jpg','jpeg'] ,accept_multiple_files=False)
   
