@@ -35,7 +35,7 @@ uploaded_file = st.sidebar.file_uploader("Upload Image/s", type=['png','jpg','jp
   
 
 if not uploaded_file:
-    angry_bird=Image.open("./Red_Legged_Kittiwake.jpg")
+    angry_bird=Image.open("../assets/Red_Legged_Kittiwake.jpg")
     image=angry_bird
 else:
     image = Image.open(uploaded_file)    
@@ -44,25 +44,26 @@ st.sidebar.write("Input image")
 st.sidebar.image(image)
     
     
-# submodules=['augmentation','enhance','contrib','feature','filters','geometry','losses','utils']       
-# submodule=st.sidebar.selectbox("Select a module:", submodules)
-# if submodule:
-#     sm = getattr(K, submodule)
-#     is_functional=any([x[0]=='functional' for x in getmembers(sm,ismodule)])
-#     if is_functional:
-#         sm=getattr(sm, 'functional')
-#     functions_list = [o[0] for o in getmembers(sm,isfunction)]
+submodules=['augmentation','enhance','contrib','feature','filters','geometry','losses','utils']       
+submodule=st.sidebar.selectbox("Select a module:", submodules)
+if submodule:
+    sm = getattr(k, submodule)
+    is_functional=any([x[0]=='functional' for x in getmembers(sm,ismodule)])
+    if is_functional:
+        sm=getattr(sm, 'functional')
+    functions_list = [o[0] for o in getmembers(sm,isfunction)]
+    functions_list = [o for o in functions_list if not o.startswith("_")]
     
     
-with open("./supported_functional.txt") as f:
-    functions_list=f.readlines()
-    functions_list=[a.split("#")[0].strip() for a in functions_list if not a.startswith("#")]
+# with open("./supported_functional.txt") as f:
+#     functions_list=f.readlines()
+#     functions_list=[a.split("#")[0].strip() for a in functions_list if not a.startswith("#")]
 
-    #use batch view for randoms 
-    random_functions_list=[a for a in functions_list if a.startswith("random")]
-    loss_functions_list=[a for a in functions_list if "loss" in a]
-    functions_list=list((set(functions_list)-set(random_functions_list))-set(loss_functions_list))
-    functions_list.sort()
+#     #use batch view for randoms 
+#     random_functions_list=[a for a in functions_list if a.startswith("random")]
+#     loss_functions_list=[a for a in functions_list if "loss" in a]
+#     functions_list=list((set(functions_list)-set(random_functions_list))-set(loss_functions_list))
+#     functions_list.sort()
 
 
 selected_function=st.sidebar.selectbox("Select a function:", functions_list)
@@ -70,8 +71,9 @@ if selected_function:
     selected_function=getattr(k, selected_function)
 
     st.write(f"# {selected_function.__module__}.{selected_function.__qualname__}")
-    simple_signature=stf.render_signature(selected_function)
-    st.markdown(f"Signature: ```{simple_signature}```")
+    st.help(selected_function)
+    # simple_signature=stf.render_signature(selected_function)
+    # st.markdown(f"Signature: ```{simple_signature}```")
 
     required_container = st.beta_container()
     optional_params = st.beta_expander("Optional Parameters", expanded=True)

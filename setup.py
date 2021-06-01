@@ -23,7 +23,7 @@ setup(
     name='streamlit-inspect',
     version='0.1.0',
     description='Create interactive documentation using streamlit',
-    python_requires='==3.*,>=3.6.0',
+    python_requires='>=3.7.0',
     project_urls={"repository": "https://github.com/cceyda/streamlit-inspect"},
     author='Ceyda Cinarel',
     author_email='15624271+cceyda@users.noreply.github.com',

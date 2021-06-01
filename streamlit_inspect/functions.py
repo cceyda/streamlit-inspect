@@ -7,19 +7,12 @@ import inspect
 
 from enum import Enum
 
-
-#Native: bool,float,str,int
-#typing: tuple,union
-#special/custom: tensor
 # enums?
 
-# this code is ugly ㅠㅠ
-# typing.get_type_hints does not work with *args,**kwargs
 # Limit to functions defined in code only (difficult?)
 # Don't import (use __import__)? https://pymotw.com/2/pyclbr/?
 
 #Use sliders when there is a value range available?
-
 
 def is_in(a,b, return_dunder=False, return_external=False):
     if a.__name__.startswith("_") and not return_dunder:
@@ -81,9 +74,7 @@ class StFunctionView():
             else:
                 with self.required_container:
                     value=self.param2st(p)
-    #         st.write(value)
             p=p.replace(default=value) #Fake user inputs as defaults
-    #         st.write(p)
             new_params.append(p)
         new_signature=self.signature.replace(parameters=new_params)
         bounds=new_signature.bind_partial()
@@ -110,7 +101,7 @@ class StFunctionView():
                 default=param.default
             else:
                 default=None
-            return self.basic2st(container,param_name,param_type,0,default)
+            return self.basic2st(st.beta_columns([1,1]),param_name,param_type,0,default)
         else:
             param_type=type(param.annotation).__name__
             #Is union or tuple
@@ -118,7 +109,7 @@ class StFunctionView():
         
         
     def typing2st(self,container,param_name,param_type,param):
-        args=tp.get_last_args(param.annotation)
+        args=tp.get_args(param.annotation)
 #         if has_default(param.default):
 #             default=param.default
 #         else:
@@ -131,13 +122,13 @@ class StFunctionView():
                 default=[None]*len(args)
             tuple_values=[]
             with container:
-                cols=st.beta_columns([1]*len(args))
+                cols=st.beta_columns([1,6]*len(args))
                 for i,(type_,param_default) in enumerate(zip(args,default)):
                     if i!=0:
                         meta="AND"
                     p_name = f'{param_name} [{i}]'
                     param_type=type_.__name__
-                    ret=self.basic2st(cols[i],p_name,param_type,i,param_default,meta)
+                    ret=self.basic2st(cols,p_name,param_type,i,param_default,meta)
                     tuple_values.append(ret)
                 return tuple(tuple_values)
         elif tp.is_union_type(p_annotation):
@@ -149,19 +140,18 @@ class StFunctionView():
                     default=None
 
                 for i,type_ in enumerate(args):
-                    cols=st.beta_columns([1]*len(args))
+                    cols=st.beta_columns([1,6]*len(args))
                     if i!=0:
                         meta="OR"
                     p_name = f'{param_name} [{i}]'
                     if is_typing(type_):
-                        nargs=tp.get_last_args(type_)
+                        nargs=tp.get_args(type_)
                         if not default:
                             default=[None]*len(nargs)
                         ret=self._typing2st(p_name,type_,nargs,default,meta) # Not supporting nested defaults?
-                        
                     else:    
                         param_type=type_.__name__
-                        ret=self.basic2st(cols[i],p_name,param_type,i,default,meta)
+                        ret=self.basic2st(cols,p_name,param_type,i,default,meta)
                     if ret is not None and return_value is None:
                         return_value=ret
                 return return_value
@@ -186,53 +176,7 @@ class StFunctionView():
         type_class.init_param(container,param_name,param_type,param_index,default=default)  
         return type_class.render(meta=meta)
         
-def render_signature(fn):
-    s=signature(fn)
-    return _render_signature(s, fn.__name__)
-    
-    
-#_render_signature code snippet stolen from https://github.com/ipython/ipython/blob/62eec6978a54f743039f857f4fddba62488d0bb4/IPython/core/oinspect.py#L991       
-def _render_signature(obj_signature, obj_name) -> str:
-    """
-    This was mostly taken from inspect.Signature.__str__.
-    Look there for the comments.
-    The only change is to add linebreaks when this gets too long.
-    """
-    result = []
-    pos_only = False
-    kw_only = True
-    for param in obj_signature.parameters.values():
-        if param.kind == inspect._POSITIONAL_ONLY:
-            pos_only = True
-        elif pos_only:
-            result.append('/')
-            pos_only = False
 
-        if param.kind == inspect._VAR_POSITIONAL:
-            kw_only = False
-        elif param.kind == inspect._KEYWORD_ONLY and kw_only:
-            result.append('*')
-            kw_only = False
-
-        result.append(str(param))
-
-    if pos_only:
-        result.append('/')
-
-    # add up name, parameters, braces (2), and commas
-    if len(obj_name) + sum(len(r) + 2 for r in result) > 75:
-        # This doesn’t fit behind “Signature: ” in an inspect window.
-        rendered = '{}(\n{})'.format(obj_name, ''.join(
-            '    {},\n'.format(r) for r in result)
-        )
-    else:
-        rendered = '{}({})'.format(obj_name, ', '.join(result))
-
-    if obj_signature.return_annotation is not inspect._empty:
-        anno = inspect.formatannotation(obj_signature.return_annotation)
-        rendered += ' -> {}'.format(anno)
-
-    return rendered
     
 
 
