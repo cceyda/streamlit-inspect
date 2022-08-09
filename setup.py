@@ -32,7 +32,7 @@ setup(
     packages=['streamlit_inspect'],
     package_dir={"": "."},
     package_data={},
-    install_requires=['streamlit==0.*,>=0.80.0',
+    install_requires=['streamlit==1.*,>=1.11.1',
                       'typing-inspect==0.*,>=0.6.0'],
     extras_require={"dev": ["pytest==4.*,>=4.6.0"]},
 )
